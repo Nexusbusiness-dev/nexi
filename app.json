@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Nexi",
+    "slug": "nexi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "ios": { "bundleIdentifier": "com.nexus.nexi", "supportsTablet": false }
+  }
+}
