@@ -26,3 +26,6 @@ jobs:
         with:
           name: Nexi-ipa
           path: ios/Nexi.ipa
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+
