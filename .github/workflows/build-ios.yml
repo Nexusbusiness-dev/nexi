@@ -3,49 +3,40 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+
+      - name: Xcode 16.4 auswählen
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
-      - run: npx expo prebuild --platform ios
-      - name: iOS Deployment Target auf 12.0 setzen
-        run: |
-          ruby - <<'RUBY'
-          path = "ios/Podfile"
-          abort("Podfile not found at #{path}") unless File.exist?(path)
 
-          content = File.read(path)
-          content.sub!(/platform\s+:ios,\s*['"][^'"]+['"]/, "platform :ios, '12.0'")
+      - name: Node-Abhängigkeiten installieren
+        run: npm install
 
-          unless content.include?("IPHONEOS_DEPLOYMENT_TARGET")
-            content.sub!(/end\s*\z/m, <<~BLOCK)
-              post_install do |installer|
-                installer.pods_project.targets.each do |target|
-                  target.build_configurations.each do |config|
-                    config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "12.0"
-                  end
-                end
-              end
-            BLOCK
-          end
+      - name: iOS Native-Projekt erzeugen
+        run: npx expo prebuild --platform ios
 
-          File.write(path, content)
-          RUBY
-          cd ios && pod install
+      - name: Pods installieren
+        run: cd ios && pod install --repo-update
+
       - name: App ohne Signatur bauen
         run: |
           cd ios
           xcodebuild -workspace Nexi.xcworkspace -scheme Nexi -configuration Release \
             -sdk iphoneos -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+
           mkdir Payload
           cp -r build/Build/Products/Release-iphoneos/Nexi.app Payload/
           zip -r Nexi.ipa Payload
+
       - uses: actions/upload-artifact@v4
         with:
           name: Nexi-ipa
