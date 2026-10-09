@@ -23,10 +23,27 @@ jobs:
       - name: iOS Native-Projekt erzeugen
         run: npx expo prebuild --platform ios
 
-      - name: Pods installieren
+      - name: Podfile auf iOS 12.0 setzen
         run: |
           cd ios
-          ruby -e "File.write('Podfile', File.read('Podfile').gsub(/platform\\s+:ios,\\s*['\"][^'\"]+['\"]/, \"platform :ios, '12.0'\"))"
+          ruby -e "File.write('Podfile', File.read('Podfile').gsub(/platform\s+:ios,\s*['\"][^'\"]+['\"]/, \"platform :ios, '12.0'\"))"
+          ruby - <<'RUBY'
+          path = 'Podfile'
+          content = File.read(path)
+          unless content.include?('post_install do |installer|')
+            content << <<~BLOCK
+
+              post_install do |installer|
+                installer.pods_project.targets.each do |target|
+                  target.build_configurations.each do |config|
+                    config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+                  end
+                end
+              end
+            BLOCK
+          end
+          File.write(path, content)
+          RUBY
           pod install --repo-update
 
       - name: App ohne Signatur bauen
