@@ -87,4 +87,44 @@ export function gate(b, text) {
   if (lust(b) < 0.3 && !has(s, URGENT)) return "Hab grad null Bock. Frag mich später nochmal.";
   if (b.emo.anger > 0.5) return "Boah, lass mal. Ich bin gerade genervt.";
   return null;
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const KEY = "nexi_brain";
+const ZERFALL = 0.1; // höher = vergisst schneller
+
+const staerke = (e) =>
+  e.staerke * Math.exp(-ZERFALL * ((Date.now() - e.zuletzt) / 86400000));
+
+async function laden() {
+  const raw = await AsyncStorage.getItem(KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+
+async function speichern(liste) {
+  await AsyncStorage.setItem(KEY, JSON.stringify(liste));
+}
+
+export async function lernen(thema, inhalt) {
+  const liste = await laden();
+  liste.push({ thema, inhalt, staerke: 1, zuletzt: Date.now() });
+  await speichern(liste);
+}
+
+export async function erinnern(thema) {
+  const liste = await laden();
+  const treffer = liste.filter(
+    (e) => e.thema.toLowerCase().includes(thema.toLowerCase()) && staerke(e) > 0.1
+  );
+  treffer.forEach((e) => {
+    e.staerke = Math.min(2, staerke(e) + 0.5);
+    e.zuletzt = Date.now();
+  });
+  await speichern(liste);
+  return treffer.sort((a, b) => staerke(b) - staerke(a));
+}
+
+export async function vergessen() {
+  const liste = await laden();
+  await speichern(liste.filter((e) => staerke(e) > 0.1));
 }
