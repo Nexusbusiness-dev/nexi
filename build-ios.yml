@@ -18,12 +18,17 @@ jobs:
       - run: npx expo prebuild --platform ios --clean
       - name: App ohne Signatur bauen
         run: |
+          set -eo pipefail
           cd ios
-          xcodebuild -workspace Nexi.xcworkspace -scheme Nexi -configuration Release \
+          WORKSPACE=$(ls -d *.xcworkspace | head -n 1)
+          SCHEME="${WORKSPACE%.xcworkspace}"
+          echo "Workspace: $WORKSPACE | Scheme: $SCHEME"
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release \
             -sdk iphoneos -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
-          mkdir Payload
-          cp -r build/Build/Products/Release-iphoneos/Nexi.app Payload/
+          APP=$(ls -d build/Build/Products/Release-iphoneos/*.app | head -n 1)
+          mkdir -p Payload
+          cp -r "$APP" Payload/
           zip -r Nexi.ipa Payload
       - uses: actions/upload-artifact@v4
         with:
