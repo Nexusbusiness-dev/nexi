@@ -78,3 +78,13 @@ export function reply(b, text) {
   if (b.emo.joy > 0.6) return s.includes("?") ? "Gute Frage! Ich weiß es nicht, aber ich merk's mir." : "Haha, stark. Erzähl mehr.";
   return s.includes("?") ? "Hm, muss ich überlegen." : "Okay, hab ich mir gemerkt.";
 }
+
+// Vorab-Prüfung: Moral, Lust, Laune. Gibt eine feste Antwort zurück, oder null = Nexi darf frei antworten.
+export function gate(b, text) {
+  const s = text.toLowerCase();
+  const bad = check(text);
+  if (bad) return "Nein, das mache ich nicht. " + bad;
+  if (lust(b) < 0.3 && !has(s, URGENT)) return "Hab grad null Bock. Frag mich später nochmal.";
+  if (b.emo.anger > 0.5) return "Boah, lass mal. Ich bin gerade genervt.";
+  return null;
+}

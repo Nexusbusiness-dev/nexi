@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { SafeAreaView, View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fresh, tick, perceive, reply } from "./brain";
+import { fresh, tick, perceive, reply, gate } from "./brain";
+import { lookup, wiedergabe } from "./knowledge";
+import { initOffline, askOffline } from "./offline";
 
 const KEY = "nexi_brain_v1";
 
@@ -10,6 +12,7 @@ export default function App() {
   const [b, setB] = useState(null);
   const [chat, setChat] = useState([]);
   const [txt, setTxt] = useState("");
+  const [st, setSt] = useState("");
   const list = useRef(null);
 
   useEffect(() => {
@@ -18,6 +21,7 @@ export default function App() {
       try { s = JSON.parse(await AsyncStorage.getItem(KEY)); } catch (e) {}
       const brain = tick(s || fresh());
       setB(brain);
+      initOffline(setSt);
       setChat([{ id: "0", me: false, t: s ? "Na, wieder da?" : "Hey, ich bin Nexi. Wer bist du?" }]);
     })();
   }, []);
@@ -25,7 +29,7 @@ export default function App() {
   const persist = (nb) => { setB({ ...nb }); AsyncStorage.setItem(KEY, JSON.stringify(nb)).catch(() => {}); };
   const add = (me, t) => setChat((c) => [...c, { id: String(c.length + 1), me, t }]);
 
-  const send = () => {
+  const send = async () => {
     const v = txt.trim();
     if (!v || !b) return;
     setTxt("");
@@ -36,8 +40,15 @@ export default function App() {
       return;
     }
     const nb = perceive(tick(b), v);
-    add(false, reply(nb, v));
     persist(nb);
+    // 1) Moral/Laune, 2) nachschlagen + eigenes Sprachmodell formuliert, 3) Notlösung: Wissen wörtlich, 4) Vorlagen
+    let answer = gate(nb, v);
+    if (!answer) {
+      const k = await lookup(nb, v);
+      const hist = chat.slice(-8).map((m) => ({ role: m.me ? "user" : "assistant", content: m.t }));
+      answer = (await askOffline(nb, v, hist, k)) || (k ? wiedergabe(k) : null) || reply(nb, v);
+    }
+    add(false, answer);
   };
 
   if (!b) return <SafeAreaView style={s.root} />;
@@ -56,6 +67,7 @@ export default function App() {
           <Bar label="Energie" v={b.energy / 100} />
           <Bar label="Freude" v={b.emo.joy} />
           <Bar label="Vertrauen" v={b.trait.trust} />
+          {!!st && <Text style={{ color: "#9a8fc4", fontSize: 11, marginTop: 4 }}>{st}</Text>}
         </View>
       </View>
       <FlatList ref={list} data={chat} keyExtractor={(i) => i.id} contentContainerStyle={{ padding: 12 }}

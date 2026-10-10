@@ -7,8 +7,18 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.nexus.nexi",
-      "supportsTablet": false,
-      "deploymentTarget": "12.0"
-    }
+      "supportsTablet": false
+    },
+    "plugins": [
+      "expo-build-properties",
+      [
+        "llama.rn",
+        {
+          "enableEntitlements": false,
+          "forceCxx20": true,
+          "enableOpenCL": false
+        }
+      ]
+    ]
   }
 }
