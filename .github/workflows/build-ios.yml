@@ -42,3 +42,23 @@ jobs:
         if: failure()
         working-directory: ios
         run: grep -E "error:" build.log | head -n 30 || true
+      - name: Podfile reparieren
+        working-directory: ios
+        run: |
+          ruby <<'RUBY'
+          s = File.read("Podfile")
+          fix = <<-FIX
+            installer.pods_project.targets.each do |t|
+              t.build_configurations.each do |c|
+                c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+                if t.name == 'fmt'
+                  c.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+                end
+              end
+            end
+          FIX
+          s.sub!("post_install do |installer|\n", "post_install do |installer|\n" + fix)
+          File.write("Podfile", s)
+          RUBY
+          pod install
+
