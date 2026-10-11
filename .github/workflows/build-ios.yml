@@ -1,63 +1,42 @@
 name: Nexi iOS bauen
+
 on:
-  workflow_dispatch:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Code holen
+        uses: actions/checkout@v4
 
-      - name: Xcode 16.4 auswählen
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app
-
-      - uses: actions/setup-node@v4
+      - name: Node einrichten
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Node-Abhängigkeiten installieren
+      - name: Pakete installieren
         run: npm install
 
-      - name: iOS Native-Projekt erzeugen
-        run: npx expo prebuild --platform ios
-
-      - name: Podfile auf iOS 12.0 setzen
-        run: |
-          cd ios
-          ruby -e "File.write('Podfile', File.read('Podfile').gsub(/platform\s+:ios,\s*['\"][^'\"]+['\"]/, \"platform :ios, '12.0'\"))"
-          ruby - <<'RUBY'
-          path = 'Podfile'
-          content = File.read(path)
-          unless content.include?('post_install do |installer|')
-            content << <<~BLOCK
-
-              post_install do |installer|
-                installer.pods_project.targets.each do |target|
-                  target.build_configurations.each do |config|
-                    config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
-                  end
-                end
-              end
-            BLOCK
-          end
-          File.write(path, content)
-          RUBY
-          pod install --repo-update
+      - name: Pods installieren
+        working-directory: ios
+        run: pod install
 
       - name: App ohne Signatur bauen
+        working-directory: ios
         run: |
-          cd ios
-          xcodebuild -workspace Nexi.xcworkspace -scheme Nexi -configuration Release \
-            -sdk iphoneos -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
-
-          mkdir Payload
-          cp -r build/Build/Products/Release-iphoneos/Nexi.app Payload/
-          zip -r Nexi.ipa Payload
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Nexi-ipa
-          path: ios/Nexi.ipa
+          set -o pipefail
+          xcodebuild \
+            -workspace Nexi.xcworkspace \
+            -scheme Nexi \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee build.log | grep -E "error:|BUILD" || true
+          grep -E "error:" build.log | head -n 20
+          exit ${PIPESTATUS[0]}
