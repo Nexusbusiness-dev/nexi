@@ -20,12 +20,8 @@ jobs:
       - name: Pakete installieren
         run: npm install
 
-      - name: iOS-CLI-Paket installieren
-        run: npm install @react-native-community/cli-platform-ios --no-save
-
-      - name: Pods installieren
-        working-directory: ios
-        run: pod install
+      - name: iOS-Projekt erzeugen
+        run: npx expo prebuild --platform ios --clean
 
       - name: App ohne Signatur bauen
         working-directory: ios
@@ -40,7 +36,10 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            build 2>&1 | tee build.log | grep -E "error:|BUILD" || true
-          grep -E "error:" build.log | head -n 20
-          exit ${PIPESTATUS[0]}
+            build 2>&1 | tee build.log
+        continue-on-error: false
 
+      - name: Fehler anzeigen
+        if: failure()
+        working-directory: ios
+        run: grep -E "error:" build.log | head -n 30 || true
