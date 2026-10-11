@@ -1,3 +1,28 @@
+name: Nexi iOS bauen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Code holen
+        uses: actions/checkout@v4
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Pakete installieren
+        run: npm install
+
+      - name: iOS-Projekt erzeugen
+        run: npx expo prebuild --platform ios --clean
+
       - name: Podfile reparieren
         working-directory: ios
         run: |
@@ -17,5 +42,25 @@
           File.write("Podfile", s)
           RUBY
           pod install
+
+      - name: App ohne Signatur bauen
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace Nexi.xcworkspace \
+            -scheme Nexi \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee build.log
+
+      - name: Fehler anzeigen
+        if: failure()
+        working-directory: ios
+        run: grep -E "error:" build.log | head -n 30 || true
 
 
