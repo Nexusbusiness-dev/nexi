@@ -37,7 +37,6 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             build 2>&1 | tee build.log
-        continue-on-error: false
 
       - name: Fehler anzeigen
         if: failure()
