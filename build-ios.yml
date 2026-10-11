@@ -1,36 +1,45 @@
 name: Nexi iOS bauen
+
 on:
-  workflow_dispatch:
   push:
     branches: [main]
+  workflow_dispatch:
+
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Code holen
+        uses: actions/checkout@v4
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '16.2'
-      - run: npm install --legacy-peer-deps
-      - run: npx expo prebuild --platform ios --clean
+
+      - name: Pakete installieren
+        run: npm install
+
+      - name: iOS-Projekt erzeugen
+        run: npx expo prebuild --platform ios --clean
+
       - name: App ohne Signatur bauen
+        working-directory: ios
         run: |
-          set -eo pipefail
-          cd ios
-          WORKSPACE=$(ls -d *.xcworkspace | head -n 1)
-          SCHEME="${WORKSPACE%.xcworkspace}"
-          echo "Workspace: $WORKSPACE | Scheme: $SCHEME"
-          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release \
-            -sdk iphoneos -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
-          APP=$(ls -d build/Build/Products/Release-iphoneos/*.app | head -n 1)
-          mkdir -p Payload
-          cp -r "$APP" Payload/
-          zip -r Nexi.ipa Payload
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Nexi-ipa
-          path: ios/Nexi.ipa
+          set -o pipefail
+          xcodebuild \
+            -workspace Nexi.xcworkspace \
+            -scheme Nexi \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee build.log
+        continue-on-error: false
+
+      - name: Fehler anzeigen
+        if: failure()
+        working-directory: ios
+        run: grep -E "error:" build.log | head -n 30 || true
