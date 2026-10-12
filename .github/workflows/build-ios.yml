@@ -7,10 +7,13 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - name: Code holen
         uses: actions/checkout@v4
+
+      - name: Xcode 16.4 wählen
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
 
       - name: Node einrichten
         uses: actions/setup-node@v4
@@ -62,5 +65,6 @@ jobs:
         if: failure()
         working-directory: ios
         run: grep -E "error:" build.log | head -n 30 || true
+
 
 
