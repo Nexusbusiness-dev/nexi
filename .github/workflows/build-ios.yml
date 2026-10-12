@@ -66,5 +66,14 @@ jobs:
         working-directory: ios
         run: grep -E "error:" build.log | head -n 30 || true
 
+      - name: Fehler anzeigen
+        if: failure()
+        working-directory: ios
+        run: |
+          echo "=== React Native Build-Log ==="
+          tail -n 200 build.log
+
+
+
 
 
