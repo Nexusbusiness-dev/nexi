@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 // Nexis Gehirn v1: Gedächtnis, Gefühle, Charakter, Energie, Entscheiden.
 // Noch ohne Sprachmodell: Antworten sind Vorlagen. Das Modell kommt später dazu.
 export const fresh = () => ({
@@ -88,7 +90,7 @@ export function gate(b, text) {
   if (b.emo.anger > 0.5) return "Boah, lass mal. Ich bin gerade genervt.";
   return null;
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
+}
 
 const KEY = "nexi_brain";
 const ZERFALL = 0.1; // höher = vergisst schneller
