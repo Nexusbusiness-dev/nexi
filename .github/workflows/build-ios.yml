@@ -23,6 +23,9 @@ jobs:
       - name: Pakete installieren
         run: npm install
 
+      - name: Expo-Abhängigkeiten prüfen
+        run: npx expo install --check
+
       - name: iOS-Projekt erzeugen
         run: npx expo prebuild --platform ios --clean
 
@@ -64,16 +67,8 @@ jobs:
       - name: Fehler anzeigen
         if: failure()
         working-directory: ios
-        run: grep -E "error:" build.log | head -n 30 || true
-
-      - name: Fehler anzeigen
-        if: failure()
-        working-directory: ios
         run: |
-          echo "=== React Native Build-Log ==="
-          tail -n 200 build.log
-
-
-
-
-
+          echo "=== Relevante Fehlermeldungen ==="
+          grep -Ein "error:|Error:|Unable to resolve|cannot be found|Command .* failed" build.log | tail -n 60 || true
+          echo "=== Ende des Build-Logs ==="
+          tail -n 100 build.log
