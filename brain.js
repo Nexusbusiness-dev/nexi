@@ -73,12 +73,9 @@ export function reply(b, text) {
   return s.includes("?") ? "Hm, muss ich überlegen." : "Okay, hab ich mir gemerkt.";
 }
 
-export function gate(b, text) {
-  const bad = check(text);
-  if (bad) return "Nein, das mache ich nicht. " + bad;
-  const s = String(text || "").toLowerCase();
-  if (lust(b) < 0.3 && !has(s, URGENT)) return "Hab grad null Bock. Frag mich später nochmal.";
-  if (b.emo.anger > 0.5) return "Boah, lass mal. Ich bin gerade genervt.";
+export function gate(_b, _text) {
+  // Keine starre Vorab-Antwort: Die Anfrage wird zuerst vom Offline-Modell im Kontext bewertet.
+  // reply() bleibt als Notlösung bestehen, falls das Modell nicht verfügbar ist.
   return null;
 }
 
