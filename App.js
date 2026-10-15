@@ -65,7 +65,7 @@ export default function App() {
     if (/^(nexi[, ]+)?(selbsttest|testlauf|systemtest)$/.test(command)) {
       const report = runSelfTests();
       const lines = report.results.map((r) => (r.ok ? "✓ " : "✗ ") + r.name + (r.ok ? "" : ": " + r.detail));
-      add(false, "Nexi-Selbsttest: " + report.passed + "/" + report.total + " bestanden.\\n" + lines.join("\\n"));
+      add(false, "Nexi-Selbsttest: " + report.passed + "/" + report.total + " bestanden.\n" + lines.join("\n"));
       return;
     }
     if (v.toLowerCase().includes(b.codeword.toLowerCase())) {
