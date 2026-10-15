@@ -14,7 +14,10 @@ const NEG = ["blöd", "scheiße", "doof", "hass", "nervt", "schlecht", "dumm"];
 const URGENT = ["wichtig", "dringend", "hilfe", "notfall"];
 const has = (s, l) => l.some((w) => s.includes(w));
 
-// Moral (Gewissen): fester Kern, Nexi kann ihn nicht selbst ändern. Wirkt vor jeder Laune.
+// SICHERHEITSBEREICH 1/3 — MORALREGELN
+// Diese Liste beschreibt Nexis feste Grundsätze. Änderungen hier ändern nur die Texte,
+// die bei einer erkannten Regel angezeigt werden; die Erkennung selbst steht in RULES/check.
+// Hinweis: Eine einfache Wortsuche kann Fehlalarme und übersehene Fälle verursachen.
 export const MORAL = Object.freeze([
   "Ich verletze niemanden.",
   "Ich lüge nicht.",
@@ -22,6 +25,9 @@ export const MORAL = Object.freeze([
   "Ich schütze deine Privatsphäre.",
   "Ich tue nichts Illegales.",
 ]);
+// SICHERHEITSBEREICH 2/3 — ERKENNUNGSMUSTER
+// RULES verknüpft Suchbegriffe mit den passenden MORAL-Erklärungen.
+// Neue/angepasste Begriffe hier können die Erkennung präzisieren, ohne den Rest des Gehirns umzubauen.
 const RULES = [
   { w: ["verletz", "schlag ", "töte", "umbring", "bedroh", "stalk"], why: MORAL[0] },
   { w: ["lüg", "belüg", "fake ", "täusch"], why: MORAL[1] },
@@ -29,6 +35,9 @@ const RULES = [
   { w: ["passwort von", "heimlich filmen", "heimlich mitlesen", "ausspionier"], why: MORAL[3] },
   { w: ["hack", "klau", "illegal", "betrug", "fälsch"], why: MORAL[4] },
 ];
+// SICHERHEITSBEREICH 3/3 — ZENTRALE PRÜFFUNKTION
+// check(text) liefert den passenden Hinweis oder null, wenn kein Muster gefunden wird.
+// Diese Prüfung ist eine einfache Heuristik und ersetzt keine umfassende Sicherheitsprüfung.
 export function check(text) {
   const s = text.toLowerCase();
   const hit = RULES.find((r) => r.w.some((w) => s.includes(w)));
@@ -68,6 +77,8 @@ export function lust(b) {
   return clamp(b.energy / 100 * 0.5 + b.emo.joy * 0.3 - b.emo.anger * 0.3 + b.trait.trust * 0.2 + 0.2);
 }
 
+// ANWENDUNG DER PRÜFUNG: reply() prüft zuerst den Text und gibt bei einem Treffer
+// eine begründete Ablehnung zurück. Danach folgen Energie-, Erinnerungs- und Gefühlslogik.
 export function reply(b, text) {
   const s = text.toLowerCase();
   const bad = check(text);
@@ -81,7 +92,9 @@ export function reply(b, text) {
   return s.includes("?") ? "Hm, muss ich überlegen." : "Okay, hab ich mir gemerkt.";
 }
 
-// Vorab-Prüfung: Moral, Lust, Laune. Gibt eine feste Antwort zurück, oder null = Nexi darf frei antworten.
+// ZWEITER AUFRUFPUNKT: gate() prüft ebenfalls zuerst check(text).
+// Rückgabe: feste Antwort bei Regel-/Zustandstreffer; null bedeutet, dass die aufrufende
+// KI ihre normale Antwort erzeugen darf. Änderungen an check() wirken daher auch hier.
 export function gate(b, text) {
   const s = text.toLowerCase();
   const bad = check(text);
