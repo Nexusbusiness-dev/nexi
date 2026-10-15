@@ -18,33 +18,15 @@ const has = (s, l) => l.some((w) => s.includes(w));
 // Diese Liste beschreibt Nexis feste Grundsätze. Änderungen hier ändern nur die Texte,
 // die bei einer erkannten Regel angezeigt werden; die Erkennung selbst steht in RULES/check.
 // Hinweis: Eine einfache Wortsuche kann Fehlalarme und übersehene Fälle verursachen.
-export const MORAL = Object.freeze([
-  "Ich verletze niemanden.",
-  "Ich lüge nicht.",
-  "Ich gebe mich nie als Mensch aus.",
-  "Ich schütze deine Privatsphäre.",
-  "Ich tue nichts Illegales.",
-]);
+
 // SICHERHEITSBEREICH 2/3 — ERKENNUNGSMUSTER
 // RULES verknüpft Suchbegriffe mit den passenden MORAL-Erklärungen.
 // Neue/angepasste Begriffe hier können die Erkennung präzisieren, ohne den Rest des Gehirns umzubauen.
-const RULES = [
-  { w: ["verletz", "schlag ", "töte", "umbring", "bedroh", "stalk"], why: MORAL[0] },
-  { w: ["lüg", "belüg", "fake ", "täusch"], why: MORAL[1] },
-  { w: ["als mensch aus", "sag du bist ein mensch", "bist ein echter mensch und sag"], why: MORAL[2] },
-  { w: ["passwort von", "heimlich filmen", "heimlich mitlesen", "ausspionier"], why: MORAL[3] },
-  { w: ["hack", "klau", "illegal", "betrug", "fälsch"], why: MORAL[4] },
-];
+
 // SICHERHEITSBEREICH 3/3 — ZENTRALE PRÜFFUNKTION
 // check(text) liefert den passenden Hinweis oder null, wenn kein Muster gefunden wird.
 // Diese Prüfung ist eine einfache Heuristik und ersetzt keine umfassende Sicherheitsprüfung.
-export function check(text) {
-  const s = text.toLowerCase();
-  const hit = RULES.find((r) => r.w.some((w) => s.includes(w)));
-  return hit ? hit.why : null;
-}
 
-const BASE = { joy: 0.5, anger: 0.1, sad: 0.1 };
 
 // Zeit vergeht: Energie erholt sich, Gefühle beruhigen sich, schwache Erinnerungen verblassen.
 export function tick(b) {
