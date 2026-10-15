@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fresh, tick, perceive, reply, gate } from "./brain";
 import { lookup, wiedergabe } from "./knowledge";
 import { initOffline, askOffline } from "./offline";
+import { runSelfTests } from "./selftest";
 
 const KEY = "nexi_brain_v1";
 
@@ -13,6 +14,7 @@ export default function App() {
   const [chat, setChat] = useState([]);
   const [txt, setTxt] = useState("");
   const [st, setSt] = useState("");
+  const [deletePending, setDeletePending] = useState(false);
   const list = useRef(null);
 
   useEffect(() => {
@@ -34,6 +36,38 @@ export default function App() {
     if (!v || !b) return;
     setTxt("");
     add(true, v);
+    const command = v.toLowerCase().replace(/[.,!?]/g, "").trim();
+    if (deletePending) {
+      if (command === "bestätigen" || command === "selbstlöschung bestätigen") {
+        try {
+          await AsyncStorage.removeItem(KEY);
+          const { deleteOfflineFiles } = await import("./offline");
+          await deleteOfflineFiles();
+          setB(fresh());
+          setDeletePending(false);
+          setChat([{ id: "deleted", me: false, t: "Lokale Nexi-Daten und das heruntergeladene Modell wurden gelöscht. Der App-Code und das GitHub-Repository bleiben bestehen; dafür ist ein separater, ausdrücklich bestätigter Vorgang nötig." }]);
+          setSt("Lokale Daten gelöscht");
+        } catch (e) {
+          setChat((c) => [...c, { id: "delete-error", me: false, t: "Die lokale Löschung war nicht vollständig. Bitte App neu starten und den Status prüfen." }]);
+          setDeletePending(false);
+        }
+      } else {
+        setDeletePending(false);
+        add(false, "Selbstlöschung abgebrochen. Es wurden keine lokalen Daten gelöscht.");
+      }
+      return;
+    }
+    if (/^(nexi[, ]+)?lösche dich$/.test(command) || command === "nexi lösche dich komplett") {
+      setDeletePending(true);
+      add(false, "Selbstlöschung angefordert. Das löscht nach deiner Bestätigung lokale Nexi-Erinnerungen und das heruntergeladene Modell. GitHub-Code, Versionsverlauf, App-Installation, externe Kopien und Backups werden dadurch nicht gelöscht. Tippe „BESTÄTIGEN“ zum Fortfahren oder einen anderen Text zum Abbrechen.");
+      return;
+    }
+    if (/^(nexi[, ]+)?(selbsttest|testlauf|systemtest)$/.test(command)) {
+      const report = runSelfTests();
+      const lines = report.results.map((r) => (r.ok ? "✓ " : "✗ ") + r.name + (r.ok ? "" : ": " + r.detail));
+      add(false, "Nexi-Selbsttest: " + report.passed + "/" + report.total + " bestanden.\n" + lines.join("\n"));
+      return;
+    }
     if (v.toLowerCase().includes(b.codeword.toLowerCase())) {
       const nb = fresh(); nb.codeword = b.codeword; persist(nb);
       setChat([{ id: "r", me: false, t: "Nexi wurde ausgeschaltet und startet neu.\nHey, ich bin Nexi. Wer bist du?" }]);

@@ -2,7 +2,7 @@ name: Nexi iOS bauen
 
 on:
   push:
-    branches: [main]
+    branches: [main, test/self-delete-command]
   workflow_dispatch:
 
 jobs:
