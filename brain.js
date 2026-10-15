@@ -35,7 +35,7 @@ export function tick(b) {
   const drift = Math.min(1, min / 120);
   // ===== SICHERHEITS-/FEHLER-MARKIERUNG START: BASE wird hier benötigt =====
   // BASE ist in dieser Datei derzeit nicht definiert; tick() kann dadurch fehlschlagen.
-  for (const k in b.emo) b.emo[k] = clamp(b.emo[k] + (BASE[k] - b.emo[k]) * drift);
+
   // ===== SICHERHEITS-/FEHLER-MARKIERUNG ENDE =====
   b.mem.forEach((m) => (m.w *= Math.pow(0.97, min / 60)));
   b.mem = b.mem.filter((m) => m.w > 0.05).slice(-100);
@@ -67,8 +67,7 @@ export function lust(b) {
 export function reply(b, text) {
   const s = text.toLowerCase();
   // ===== REGELPRÜFUNG START: check(text) =====
-  // check() ist in dieser Datei derzeit nicht definiert; dieser Aufruf allein ist keine aktive Prüfung.
-  const bad = check(text);
+  // check() ist in dieser Datei derzeit nicht definiert; dieser Aufruf allein ist keine aktive Prüfung.  const bad = check(text);
   // ===== REGELPRÜFUNG ENDE =====
   if (bad) return "Nein, das mache ich nicht. " + bad;
   const urgent = has(s, URGENT);
@@ -87,7 +86,7 @@ export function gate(b, text) {
   const s = text.toLowerCase();
   // ===== REGELPRÜFUNG START: check(text) =====
   // check() ist in dieser Datei derzeit nicht definiert; dieser Aufruf allein ist keine aktive Prüfung.
-  const bad = check(text);
+
   // ===== REGELPRÜFUNG ENDE =====
   if (bad) return "Nein, das mache ich nicht. " + bad;
   if (lust(b) < 0.3 && !has(s, URGENT)) return "Hab grad null Bock. Frag mich später nochmal.";
