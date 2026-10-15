@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { SafeAreaView, View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fresh, tick, perceive, reply, gate } from "./brain";
+import { fresh, tick, perceive, reply, gate, learnTask, getLearnedTasks } from "./brain";
 import { lookup, wiedergabe } from "./knowledge";
 import { initOffline, askOffline } from "./offline";
 
@@ -34,6 +34,23 @@ export default function App() {
     if (!v || !b) return;
     setTxt("");
     add(true, v);
+
+    // 🟨 LERNMODUS: "Lerne Aufgabe: Titel = Anweisung"
+    const learnMatch = v.match(/^lerne\\s+aufgabe\\s*:\\s*([^=]{1,100})=\\s*([\\s\\S]{1,2000})$/i);
+    if (learnMatch) {
+      const result = learnTask(b, learnMatch[1], learnMatch[2]);
+      persist(result.brain);
+      add(false, result.message);
+      return;
+    }
+    if (/^(zeige|liste)\\s+(mir\\s+)?(die\\s+)?gelernten\\s+aufgaben\\s*\\??$/i.test(v)) {
+      const tasks = getLearnedTasks(b);
+      add(false, tasks.length
+        ? "Das habe ich mir gemerkt:\\n" + tasks.map((t, i) => (i + 1) + ". " + t.title + ": " + t.instruction).join("\\n")
+        : "Ich habe noch keine Aufgaben gelernt. Beispiel: Lerne Aufgabe: Begrüßung = Antworte freundlich und kurz.");
+      return;
+    }
+
     if (v.toLowerCase().includes(b.codeword.toLowerCase())) {
       const nb = fresh(); nb.codeword = b.codeword; persist(nb);
       setChat([{ id: "r", me: false, t: "Nexi wurde ausgeschaltet und startet neu.\nHey, ich bin Nexi. Wer bist du?" }]);
