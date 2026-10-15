@@ -36,17 +36,17 @@ export default function App() {
     add(true, v);
 
     // 🟨 LERNMODUS: "Lerne Aufgabe: Titel = Anweisung"
-    const learnMatch = v.match(/^lerne\\s+aufgabe\\s*:\\s*([^=]{1,100})=\\s*([\\s\\S]{1,2000})$/i);
+    const learnMatch = v.match(/^lerne\s+aufgabe\s*:\s*([^=]{1,100})=\s*([\s\S]{1,2000})$/i);
     if (learnMatch) {
       const result = learnTask(b, learnMatch[1], learnMatch[2]);
       persist(result.brain);
       add(false, result.message);
       return;
     }
-    if (/^(zeige|liste)\\s+(mir\\s+)?(die\\s+)?gelernten\\s+aufgaben\\s*\\??$/i.test(v)) {
+    if (/^(zeige|liste)\s+(mir\s+)?(die\s+)?gelernten\s+aufgaben\s*\??$/i.test(v)) {
       const tasks = getLearnedTasks(b);
       add(false, tasks.length
-        ? "Das habe ich mir gemerkt:\\n" + tasks.map((t, i) => (i + 1) + ". " + t.title + ": " + t.instruction).join("\\n")
+        ? "Das habe ich mir gemerkt:\n" + tasks.map((t, i) => (i + 1) + ". " + t.title + ": " + t.instruction).join("\n")
         : "Ich habe noch keine Aufgaben gelernt. Beispiel: Lerne Aufgabe: Begrüßung = Antworte freundlich und kurz.");
       return;
     }
