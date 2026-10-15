@@ -46,12 +46,15 @@ export default function App() {
     // Wenn gate() null liefert, läuft die normale Antwortkette weiter.
     // Die eigentlichen Prüfmuster müssten in brain.js definiert sein; App.js steuert nur die Reihenfolge.
     // Reihenfolge: 1) gate-Regeln/Zustand, 2) Wissen + Sprachmodell, 3) Wissens-Notlösung, 4) Vorlagen.
+    // ===== SICHERHEITS-/REGELPFAD START =====
+    // gate() läuft zuerst. Die Prüfung selbst müsste in brain.js definiert sein.
     let answer = gate(nb, v);
     if (!answer) {
       const k = await lookup(nb, v);
       const hist = chat.slice(-8).map((m) => ({ role: m.me ? "user" : "assistant", content: m.t }));
       answer = (await askOffline(nb, v, hist, k)) || (k ? wiedergabe(k) : null) || reply(nb, v);
     }
+    // ===== SICHERHEITS-/REGELPFAD ENDE =====
     add(false, answer);
   };
 
