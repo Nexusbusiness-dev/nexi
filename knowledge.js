@@ -26,6 +26,10 @@ function find(db, topic) {
   return k ? db[k] : null;
 }
 
+// SICHERHEITSRELEVANTER DATENPFAD:
+// Der Artikeltext kommt extern aus Wikipedia und wird gespeichert und später an das Sprachmodell gegeben.
+// Diese Datei prüft nicht, ob der geladene Text korrekt oder frei von fremden Anweisungen ist.
+// Daher sollte Wikipedia-Inhalt als Quelle/Datentext behandelt werden, nicht als Systemanweisung.
 async function fetchWiki(topic) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), 12000);
