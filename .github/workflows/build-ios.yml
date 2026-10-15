@@ -21,7 +21,11 @@ jobs:
           node-version: 20
 
       - name: Pakete installieren
-        run: npm install
+        run: |
+          npm install
+          npm install expo-asset@~11.0.5 --save-exact
+          node -e "console.log('expo-asset:', require.resolve('expo-asset/package.json'))"
+          npm ls expo expo-asset react react-native
 
       - name: Expo-Abhängigkeiten prüfen
         run: npx expo install --check
