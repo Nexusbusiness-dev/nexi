@@ -40,6 +40,10 @@ export async function initOffline(setStatus) {
 
 const lvl = (x) => (x > 0.66 ? "hoch" : x > 0.33 ? "mittel" : "niedrig");
 
+// SICHERHEITSRELEVANTE PROMPT-VORGABEN:
+// Die folgenden Systemanweisungen bitten das Modell, sich nicht als Mensch auszugeben
+// und Unwissen offen zuzugeben. Das sind Prompt-Regeln, keine technisch erzwungene Sperre.
+// Der Prompt enthält außerdem Stimmung, Erinnerungen und optional Wikipedia-Text.
 function systemPrompt(b, k) {
   const mem = b.mem.slice().sort((x, y) => y.w - x.w).slice(0, 5).map((m) => "- " + m.text).join("\n") || "- (noch nichts)";
   const parts = [
