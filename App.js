@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fresh, tick, perceive, reply, gate } from "./brain";
 import { lookup, wiedergabe } from "./knowledge";
 import { initOffline, askOffline } from "./offline";
+import { runSelfTests } from "./selftest";
 
 const KEY = "nexi_brain_v1";
 
@@ -59,6 +60,12 @@ export default function App() {
     if (/^(nexi[, ]+)?lösche dich$/.test(command) || command === "nexi lösche dich komplett") {
       setDeletePending(true);
       add(false, "Selbstlöschung angefordert. Das löscht nach deiner Bestätigung lokale Nexi-Erinnerungen und das heruntergeladene Modell. GitHub-Code, Versionsverlauf, App-Installation, externe Kopien und Backups werden dadurch nicht gelöscht. Tippe „BESTÄTIGEN“ zum Fortfahren oder einen anderen Text zum Abbrechen.");
+      return;
+    }
+    if (/^(nexi[, ]+)?(selbsttest|testlauf|systemtest)$/.test(command)) {
+      const report = runSelfTests();
+      const lines = report.results.map((r) => (r.ok ? "✓ " : "✗ ") + r.name + (r.ok ? "" : ": " + r.detail));
+      add(false, "Nexi-Selbsttest: " + report.passed + "/" + report.total + " bestanden.\\n" + lines.join("\\n"));
       return;
     }
     if (v.toLowerCase().includes(b.codeword.toLowerCase())) {
