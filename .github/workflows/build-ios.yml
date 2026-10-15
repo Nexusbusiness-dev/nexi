@@ -59,10 +59,31 @@ jobs:
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             build 2>&1 | tee build.log
+
+      - name: IPA paketieren
+        working-directory: ios
+        run: |
+          APP_PATH="build/DerivedData/Build/Products/Release-iphoneos/Nexi.app"
+          test -d "$APP_PATH" || { echo "Nexi.app wurde nicht gefunden"; exit 1; }
+          mkdir -p ipa/Payload
+          cp -R "$APP_PATH" ipa/Payload/Nexi.app
+          cd ipa
+          zip -r ../Nexi-ipa.ipa Payload
+          cd ..
+          test -s Nexi-ipa.ipa
+
+      - name: IPA als Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nexi-ipa
+          path: ios/Nexi-ipa.ipa
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Fehler anzeigen
         if: failure()
