@@ -1,12 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Nexis Gehirn v1: Gedächtnis, Gefühle, Charakter, Energie, Entscheiden.
+// 🟪 GEHIRN: Gedächtnis, Gefühle, Charakter, Energie und Entscheiden.
 // Noch ohne Sprachmodell: Antworten sind Vorlagen. Das Modell kommt später dazu.
 export const fresh = () => ({
   t: Date.now(), energy: 100, codeword: "Nexi Neustart",
   emo: { joy: 0.5, anger: 0.1, sad: 0.1 },
   trait: { playful: 0.5, trust: 0.2, curious: 0.5 },
   mem: [],
+  // 🟨 GELERNTE AUFGABEN: vom Nutzer ausdrücklich beigebrachte Anweisungen.
+  tasks: [],
 });
 const clamp = (x) => Math.max(0, Math.min(1, x));
 const POS = ["danke", "super", "geil", "cool", "gut", "lieb", "freu", "haha"];
@@ -14,7 +16,7 @@ const NEG = ["blöd", "scheiße", "doof", "hass", "nervt", "schlecht", "dumm"];
 const URGENT = ["wichtig", "dringend", "hilfe", "notfall"];
 const has = (s, l) => l.some((w) => s.includes(w));
 
-// Moral (Gewissen): fester Kern, Nexi kann ihn nicht selbst ändern. Wirkt vor jeder Laune.
+// 🟩 MORAL / FESTER KERN: Nexi kann diese Regeln nicht selbst ändern. Wirken vor jeder Laune.
 export const MORAL = Object.freeze([
   "Ich verletze niemanden.",
   "Ich lüge nicht.",
@@ -129,4 +131,26 @@ export async function erinnern(thema) {
 export async function vergessen() {
   const liste = await laden();
   await speichern(liste.filter((e) => staerke(e) > 0.1));
+}
+
+// 🟨 LERNEN: Speichert eine vom Nutzer beigebrachte Aufgabe dauerhaft im Gehirnzustand.
+// Das speichert Anweisungen; es trainiert nicht die Gewichte des Sprachmodells.
+export function learnTask(b, title, instruction) {
+  const cleanTitle = String(title || "").trim().slice(0, 100);
+  const cleanInstruction = String(instruction || "").trim().slice(0, 2000);
+  if (!cleanTitle || !cleanInstruction) {
+    return { brain: b, ok: false, message: "Bitte Titel und Anweisung angeben." };
+  }
+  if (!Array.isArray(b.tasks)) b.tasks = [];
+  const key = cleanTitle.toLowerCase();
+  const index = b.tasks.findIndex((t) => String(t.title).toLowerCase() === key);
+  const item = { title: cleanTitle, instruction: cleanInstruction, updatedAt: Date.now() };
+  if (index >= 0) b.tasks[index] = item;
+  else b.tasks = [...b.tasks, item].slice(-50);
+  return { brain: b, ok: true, message: "Aufgabe gespeichert: " + cleanTitle };
+}
+
+// 🟨 ERINNERN: Gibt die gespeicherten Aufgaben zurück.
+export function getLearnedTasks(b) {
+  return Array.isArray(b.tasks) ? b.tasks : [];
 }
