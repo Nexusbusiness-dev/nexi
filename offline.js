@@ -76,3 +76,22 @@ export async function askOffline(b, text, hist = [], k = null) {
     return null;
   }
 }
+
+/** Entfernt nur die lokalen Modell-Dateien dieser App. Externe Kopien bleiben unberührt. */
+export async function deleteOfflineFiles() {
+  try {
+    if (ctx && typeof ctx.release === "function") await ctx.release();
+  } catch (e) {
+    // Auch wenn die native Modellinstanz nicht freigegeben werden kann, versuchen wir die Dateien zu entfernen.
+  }
+  ctx = null;
+  starting = false;
+  for (const path of [PATH, PATH + ".part"]) {
+    try {
+      const info = await FileSystem.getInfoAsync(path);
+      if (info.exists) await FileSystem.deleteAsync(path, { idempotent: true });
+    } catch (e) {
+      // Die Oberfläche meldet, falls die lokale Löschung nicht vollständig war.
+    }
+  }
+}
