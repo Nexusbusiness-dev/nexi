@@ -35,6 +35,8 @@ async function fetchWiki(topic) {
   const timer = setTimeout(() => ctl.abort(), 12000);
   try {
     const url = "https://de.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=1&prop=extracts&exintro=1&explaintext=1&exsentences=3&format=json&origin=*&gsrsearch=" + encodeURIComponent(topic);
+    // ===== EXTERNE QUELLE START: WIKIPEDIA =====
+    // Die Antwort wird als Artikeltext übernommen; hier findet keine inhaltliche Sicherheitsprüfung statt.
     const r = await fetch(url, { signal: ctl.signal });
     if (!r.ok) return null;
     const d = await r.json();
@@ -42,6 +44,7 @@ async function fetchWiki(topic) {
     const p = pages[0];
     if (!p || !p.extract) return null;
     return { title: p.title, text: p.extract.trim() };
+    // ===== EXTERNE QUELLE ENDE =====
   } catch (e) { return null; } finally { clearTimeout(timer); }
 }
 
@@ -55,6 +58,8 @@ export async function lookup(b, text) {
   if (hit) return { title: hit.title, text: hit.text, fresh: false };
   const got = await fetchWiki(topic);
   if (!got) return null; // kein Internet / nichts gefunden
+  // ===== SPEICHERUNG EXTERNER DATEN START =====
+  // Der geladene Wikipedia-Text wird dauerhaft im lokalen Wissensspeicher abgelegt.
   const entry = { title: got.title, text: got.text, t: Date.now() };
   db[topic] = entry;
   db[got.title.toLowerCase()] = entry;
