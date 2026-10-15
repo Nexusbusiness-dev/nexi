@@ -41,7 +41,11 @@ export default function App() {
     }
     const nb = perceive(tick(b), v);
     persist(nb);
-    // 1) Moral/Laune, 2) nachschlagen + eigenes Sprachmodell formuliert, 3) Notlösung: Wissen wörtlich, 4) Vorlagen
+    // SICHERHEITS-/REGELPFAD: gate() wird vor dem Sprachmodell ausgeführt.
+    // Wenn gate() eine feste Antwort liefert, wird askOffline() übersprungen.
+    // Wenn gate() null liefert, läuft die normale Antwortkette weiter.
+    // Die eigentlichen Prüfmuster müssten in brain.js definiert sein; App.js steuert nur die Reihenfolge.
+    // Reihenfolge: 1) gate-Regeln/Zustand, 2) Wissen + Sprachmodell, 3) Wissens-Notlösung, 4) Vorlagen.
     let answer = gate(nb, v);
     if (!answer) {
       const k = await lookup(nb, v);
