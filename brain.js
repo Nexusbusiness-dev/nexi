@@ -65,13 +65,10 @@ export function reply(b, text) {
   const s = String(text || "").toLowerCase();
   const bad = check(text);
   if (bad) return "Nein, das mache ich nicht. " + bad;
-  if (lust(b) < 0.3 && !has(s, URGENT)) return "Hab grad null Bock. Frag mich später nochmal.";
   const old = b.mem.slice(0, -1).filter((m) => m.w > 0.4 && m.text.toLowerCase().split(" ").some((w) => w.length > 4 && s.includes(w)))[0];
-  if (b.emo.anger > 0.5) return "Ich merke, dass der Ton gerade angespannt ist. Was ist passiert?";
-  if (old) return 'Ich erinnere mich an einen ähnlichen Punkt aus unserem Gespräch: "' + old.text + '". Meinst du das?';
-  if (b.emo.joy > 0.6 && (s.includes("danke") || s.includes("haha") || s.includes("freu"))) return "Gern 😊 Erzähl ruhig weiter.";
-  if (s.includes("?")) return "Ich kann das mit den Informationen, die mir gerade zur Verfügung stehen, nicht sicher beantworten. Kannst du mir etwas mehr Kontext geben?";
-  return "Ich höre dir zu. Was genau möchtest du dazu sagen oder gemeinsam herausfinden?";
+  if (old) return 'Du hattest zuvor erwähnt: "' + old.text + '". Ist das für deine aktuelle Frage wichtig?';
+  if (s.includes("?")) return "Ich kann das gerade nicht zuverlässig beantworten, weil mein lokales Modell nicht verfügbar ist. Wenn du mir etwas mehr Kontext gibst, kann ich es mit den vorhandenen Informationen erneut versuchen.";
+  return "Mein lokales Sprachmodell ist gerade nicht verfügbar. Ich kann es mit den Informationen, die hier vorhanden sind, noch einmal versuchen.";
 }
 
 // Nur klare Schutzfälle dürfen die freie Antwortgenerierung blockieren.
