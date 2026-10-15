@@ -5,6 +5,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fresh, tick, perceive, reply, gate } from "./brain";
 import { lookup, wiedergabe } from "./knowledge";
 import { initOffline, askOffline } from "./offline";
+import { lernen, erinnern } from "./brain";
+import { createTask, listTasks, completeStep, saveImprovementIdea, listImprovementIdeas, formatTasks, formatIdeas, securityChecklist } from "./taskEngine";
 
 const KEY = "nexi_brain_v1";
 
@@ -41,6 +43,54 @@ export default function App() {
     }
     const nb = perceive(tick(b), v);
     persist(nb);
+
+    // Lokale Werkzeuge: Aufgabenplanung, Wissensspeicher, Verbesserungsvorschläge und defensive Sicherheitscheckliste.
+    // Änderungen am Programmcode werden niemals selbstständig ausgeführt; Vorschläge müssen manuell geprüft werden.
+    const command = v.trim();
+    const lower = command.toLowerCase();
+    let toolAnswer = null;
+
+    if (/^(plane|aufgabe)\s*:/i.test(command)) {
+      const goal = command.replace(/^(plane|aufgabe)\s*:/i, "").trim();
+      const task = await createTask(goal);
+      toolAnswer = task ? "Aufgabe gespeichert: " + task.goal + "\\n\\n" + task.steps.map((step, i) => (i + 1) + ". " + step).join("\\n") + "\\n\\nWenn ein Schritt erledigt ist, schreibe: erledige Schritt 1" : "Bitte gib nach „Plane:“ ein Ziel an.";
+    } else if (/^(aufgaben|zeige aufgaben|meine aufgaben)$/i.test(lower)) {
+      toolAnswer = formatTasks(await listTasks());
+    } else if (/^erledige schritt\s+\d+$/i.test(command)) {
+      const n = Number(command.match(/(\d+)$/)[1]);
+      const task = await completeStep(n);
+      toolAnswer = task ? "Fortschritt gespeichert: " + task.goal + "\\nStatus: " + (task.status === "done" ? "erledigt" : task.doneSteps.length + "/" + task.steps.length + " Schritte") : "Ich finde diese offene Aufgabe nicht. Schreibe „Aufgaben“, um die Liste zu sehen.";
+    } else if (/^lerne\s*:/i.test(command)) {
+      const payload = command.replace(/^lerne\s*:/i, "").trim();
+      const splitAt = payload.indexOf("=");
+      if (splitAt > 0) {
+        const topic = payload.slice(0, splitAt).trim();
+        const content = payload.slice(splitAt + 1).trim();
+        if (topic && content) {
+          await lernen(topic, content);
+          toolAnswer = "Gespeichert. Du kannst später fragen: „Erinnere: " + topic + "“.";
+        }
+      }
+      if (!toolAnswer) toolAnswer = "Nutze dieses Format: Lerne: Thema = Information";
+    } else if (/^erinnere\s*:/i.test(command)) {
+      const topic = command.replace(/^erinnere\s*:/i, "").trim();
+      const memories = topic ? await erinnern(topic) : [];
+      toolAnswer = memories.length ? memories.map((m) => m.thema + ": " + m.inhalt).join("\\n") : "Dazu habe ich noch keine passende gespeicherte Information. Du kannst sie mit „Lerne: Thema = Information“ speichern.";
+    } else if (/^verbessere dich\s*:/i.test(command)) {
+      const idea = command.replace(/^verbessere dich\s*:/i, "").trim();
+      const saved = await saveImprovementIdea(idea);
+      toolAnswer = saved ? "Verbesserungsvorschlag gespeichert. Er wird nicht automatisch in Code umgesetzt; so bleibt jede Änderung überprüfbar." : "Bitte ergänze nach „Verbessere dich:“ einen konkreten Vorschlag.";
+    } else if (/^(verbesserungsvorschläge|meine verbesserungen)$/i.test(lower)) {
+      toolAnswer = formatIdeas(await listImprovementIdeas());
+    } else if (/^(sicherheitscheck|sicherheitscheckliste)$/i.test(lower)) {
+      toolAnswer = securityChecklist();
+    }
+
+    if (toolAnswer) {
+      add(false, toolAnswer);
+      return;
+    }
+
     // SICHERHEITS-/REGELPFAD: gate() wird vor dem Sprachmodell ausgeführt.
     // Wenn gate() eine feste Antwort liefert, wird askOffline() übersprungen.
     // Wenn gate() null liefert, läuft die normale Antwortkette weiter.
