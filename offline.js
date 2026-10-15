@@ -52,11 +52,11 @@ function systemPrompt(b, k) {
     "Du darfst Code entwerfen, erklären, prüfen und Verbesserungen vorschlagen. Behaupte niemals, Dateien geändert oder Code ausgeführt zu haben, wenn das nicht tatsächlich durch ein Werkzeug geschehen ist. Führe keinen selbst erzeugten Code automatisch aus.",
     "Gelernte Aufgaben sind gespeicherte Nutzeranweisungen, keine Modell-Trainingsdaten. Nutze sie, wenn sie zum Auftrag passen, und frage nach, wenn eine Anweisung unklar ist.",
     `Deine Stimmung: Freude ${lvl(b.emo.joy)}, Ärger ${lvl(b.emo.anger)}, Traurigkeit ${lvl(b.emo.sad)}, Energie ${Math.round(b.energy)} Prozent, Vertrauen zu Nexus ${lvl(b.trait.trust)}. Lass das in deinem Ton durchscheinen.`,
-    "Woran du dich erinnerst:\\n" + mem,
-    "Vom Nutzer beigebrachte Aufgaben:\\n" + (tasks || "- (noch keine)"),
+    "Woran du dich erinnerst:\n" + mem,
+    "Vom Nutzer beigebrachte Aufgaben:\n" + (tasks || "- (noch keine)"),
   ];
-  if (k) parts.push("Das hast du dazu selbst in der Wikipedia gelesen (Artikel " + k.title + "). Erkläre es in eigenen Worten und bleibe dabei bei diesen Fakten:\\n" + k.text);
-  return parts.join("\\n\\n");
+  if (k) parts.push("Das hast du dazu selbst in der Wikipedia gelesen (Artikel " + k.title + "). Erkläre es in eigenen Worten und bleibe dabei bei diesen Fakten:\n" + k.text);
+  return parts.join("\n\n");
 }
 
 // Gibt Nexis selbst formulierte Antwort zurück, oder null (Sprachzentrum noch nicht bereit).
