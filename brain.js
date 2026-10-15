@@ -14,18 +14,18 @@ const NEG = ["blöd", "scheiße", "doof", "hass", "nervt", "schlecht", "dumm"];
 const URGENT = ["wichtig", "dringend", "hilfe", "notfall"];
 const has = (s, l) => l.some((w) => s.includes(w));
 
-// SICHERHEITSBEREICH 1/3 — MORALREGELN
-// Diese Liste beschreibt Nexis feste Grundsätze. Änderungen hier ändern nur die Texte,
-// die bei einer erkannten Regel angezeigt werden; die Erkennung selbst steht in RULES/check.
-// Hinweis: Eine einfache Wortsuche kann Fehlalarme und übersehene Fälle verursachen.
+// SICHERHEITSBEREICH 1/3 — HIER WÄREN DIE MORALREGELN ZU DEFINIEREN
+// In der aktuell geprüften Datei ist an dieser Stelle keine MORAL-Liste vorhanden.
+// Deshalb nicht davon ausgehen, dass bereits feste Moraltexte hinterlegt sind.
 
-// SICHERHEITSBEREICH 2/3 — ERKENNUNGSMUSTER
-// RULES verknüpft Suchbegriffe mit den passenden MORAL-Erklärungen.
-// Neue/angepasste Begriffe hier können die Erkennung präzisieren, ohne den Rest des Gehirns umzubauen.
+// SICHERHEITSBEREICH 2/3 — HIER WÄREN ERKENNUNGSMUSTER ZU DEFINIEREN
+// In der aktuell geprüften Datei ist keine RULES-Liste vorhanden.
+// Es gibt zwar Aufrufe von check(text) weiter unten, aber keine check()-Definition in dieser Datei.
 
-// SICHERHEITSBEREICH 3/3 — ZENTRALE PRÜFFUNKTION
-// check(text) liefert den passenden Hinweis oder null, wenn kein Muster gefunden wird.
-// Diese Prüfung ist eine einfache Heuristik und ersetzt keine umfassende Sicherheitsprüfung.
+// SICHERHEITSBEREICH 3/3 — ZENTRALE PRÜFUNG (FEHLT AKTUELL)
+// reply() und gate() rufen check(text) auf; ohne Definition führt das beim Aufruf zu einem Fehler.
+// Das ist eine Markierung des Ist-Zustands, keine aktive Sicherheitsprüfung.
+// Zusätzlich verwendet tick() BASE, das ebenfalls in dieser Datei nicht definiert ist.
 
 
 // Zeit vergeht: Energie erholt sich, Gefühle beruhigen sich, schwache Erinnerungen verblassen.
