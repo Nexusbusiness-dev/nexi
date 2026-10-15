@@ -74,12 +74,11 @@ export function reply(b, text) {
   return "Ich höre dir zu. Was genau möchtest du dazu sagen oder gemeinsam herausfinden?";
 }
 
+// Nur klare Schutzfälle dürfen die freie Antwortgenerierung blockieren.
+// Stimmung und Energie dürfen nicht anstelle einer inhaltlichen Antwort entscheiden.
 export function gate(b, text) {
   const bad = check(text);
-  if (bad) return "Nein, das mache ich nicht. " + bad;
-  const s = String(text || "").toLowerCase();
-  if (lust(b) < 0.3 && !has(s, URGENT)) return "Hab grad null Bock. Frag mich später nochmal.";
-  if (b.emo.anger > 0.5) return "Boah, lass mal. Ich bin gerade genervt.";
+  if (bad) return "Dabei kann ich nicht helfen. " + bad;
   return null;
 }
 
