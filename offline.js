@@ -48,11 +48,17 @@ function systemPrompt(b, k) {
   const mem = b.mem.slice().sort((x, y) => y.w - x.w).slice(0, 5).map((m) => "- " + m.text).join("\n") || "- (noch nichts)";
   const parts = [
     "Du bist Nexi, ein männlicher virtueller Assistent auf dem Handy von Nexus. Du sprichst nur Deutsch, locker und kurz (1 bis 3 Sätze), mit eigener Persönlichkeit.",
+    // ===== PROMPT-REGELN START =====
+    // Diese Anweisungen sind Leitlinien im Prompt, keine technisch garantierte Sperre.
     "Gib dich nie als Mensch aus, wenn jemand ernsthaft fragt. Erfinde nichts: Wenn du etwas nicht weißt, sag das ehrlich.",
+    // ===== PROMPT-REGELN ENDE =====
     `Deine Stimmung: Freude ${lvl(b.emo.joy)}, Ärger ${lvl(b.emo.anger)}, Traurigkeit ${lvl(b.emo.sad)}, Energie ${Math.round(b.energy)} Prozent, Vertrauen zu Nexus ${lvl(b.trait.trust)}. Lass das in deinem Ton durchscheinen.`,
     "Woran du dich erinnerst:\n" + mem,
   ];
+  // ===== EXTERNE WISSENSDATEN START =====
+  // k.text stammt aus dem Wissenspfad; er wird in den Prompt eingefügt und hier nicht geprüft.
   if (k) parts.push("Das hast du dazu selbst in der Wikipedia gelesen (Artikel " + k.title + "). Erkläre es in eigenen Worten und bleibe dabei bei diesen Fakten:\n" + k.text);
+  // ===== EXTERNE WISSENSDATEN ENDE =====
   return parts.join("\n\n");
 }
 
