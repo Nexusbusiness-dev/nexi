@@ -53,13 +53,13 @@ export default function App() {
     if (/^(plane|aufgabe)\s*:/i.test(command)) {
       const goal = command.replace(/^(plane|aufgabe)\s*:/i, "").trim();
       const task = await createTask(goal);
-      toolAnswer = task ? "Aufgabe gespeichert: " + task.goal + "\\n\\n" + task.steps.map((step, i) => (i + 1) + ". " + step).join("\\n") + "\\n\\nWenn ein Schritt erledigt ist, schreibe: erledige Schritt 1" : "Bitte gib nach „Plane:“ ein Ziel an.";
+      toolAnswer = task ? "Aufgabe gespeichert: " + task.goal + "\n\n" + task.steps.map((step, i) => (i + 1) + ". " + step).join("\n") + "\n\nWenn ein Schritt erledigt ist, schreibe: erledige Schritt 1" : "Bitte gib nach „Plane:“ ein Ziel an.";
     } else if (/^(aufgaben|zeige aufgaben|meine aufgaben)$/i.test(lower)) {
       toolAnswer = formatTasks(await listTasks());
     } else if (/^erledige schritt\s+\d+$/i.test(command)) {
       const n = Number(command.match(/(\d+)$/)[1]);
       const task = await completeStep(n);
-      toolAnswer = task ? "Fortschritt gespeichert: " + task.goal + "\\nStatus: " + (task.status === "done" ? "erledigt" : task.doneSteps.length + "/" + task.steps.length + " Schritte") : "Ich finde diese offene Aufgabe nicht. Schreibe „Aufgaben“, um die Liste zu sehen.";
+      toolAnswer = task ? "Fortschritt gespeichert: " + task.goal + "\nStatus: " + (task.status === "done" ? "erledigt" : task.doneSteps.length + "/" + task.steps.length + " Schritte") : "Ich finde diese offene Aufgabe nicht. Schreibe „Aufgaben“, um die Liste zu sehen.";
     } else if (/^lerne\s*:/i.test(command)) {
       const payload = command.replace(/^lerne\s*:/i, "").trim();
       const splitAt = payload.indexOf("=");
@@ -75,7 +75,7 @@ export default function App() {
     } else if (/^erinnere\s*:/i.test(command)) {
       const topic = command.replace(/^erinnere\s*:/i, "").trim();
       const memories = topic ? await erinnern(topic) : [];
-      toolAnswer = memories.length ? memories.map((m) => m.thema + ": " + m.inhalt).join("\\n") : "Dazu habe ich noch keine passende gespeicherte Information. Du kannst sie mit „Lerne: Thema = Information“ speichern.";
+      toolAnswer = memories.length ? memories.map((m) => m.thema + ": " + m.inhalt).join("\n") : "Dazu habe ich noch keine passende gespeicherte Information. Du kannst sie mit „Lerne: Thema = Information“ speichern.";
     } else if (/^verbessere dich\s*:/i.test(command)) {
       const idea = command.replace(/^verbessere dich\s*:/i, "").trim();
       const saved = await saveImprovementIdea(idea);
